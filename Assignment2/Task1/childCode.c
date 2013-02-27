@@ -6,8 +6,10 @@
 #include <stdlib.h>
 #include <signal.h>
 
-#define MIN 50
-#define MAX 100
+#include <time.h>
+
+#define MIN 5
+#define MAX 15
 
 void handler(int mysig)
 {
@@ -20,11 +22,15 @@ void handler(int mysig)
 
 int main()
 {
+   signal(SIGINT, SIG_IGN);
+   time_t seconds;
+   srand((unsigned int) seconds);
+
    int child_id = getpid();
-   int timer = (rand() % (MAX - MIN +1)) + MIN;
+   int timer = rand() % (MAX - MIN +1) + MIN;
    printf("My PID: %d\nI will live for %d seconds\n", child_id, timer);
    signal(SIGALRM, handler);
-   alarm(5);
+   alarm(timer);
 
-   sleep(6);
+   sleep(timer + 1);
 }

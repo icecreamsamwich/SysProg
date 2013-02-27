@@ -4,39 +4,48 @@
 #include <string.h>
 #include <sys/wait.h>
 
+int pidArray[4];
+
+void ctrlCHandler(int mysig)
+{
+   int count;
+   for(count=0;count<5;count++)
+   {
+	printf("Parent killing PID: %d\n", pidArray[count]);
+	kill(pidArray[count], SIGKILL);
+   }
+}
+
+void handler(int mysig)
+{
+   printf("A child has died\n");
+}
+
 int main()
 {
-   int rValue = fork();
-
-   if(rValue == 0)
+   signal(SIGINT, ctrlCHandler);
+   int status;
+   int forkCount;
+   for(forkCount=0;forkCount<5;forkCount++)
    {
-	printf("Child 1 starting...\n");
-	execl("./childCode", "childCode", NULL);
-	printf("Passed 'execl'\n");
-	return 1;
-   }
-   else
-   {
-	int status;
-	pid_t childThatExitedID = wait(&status);
-	printf("childThatExitedID: %d\n", childThatExitedID);
-	if(childThatExitedID != -1)
+	int child = fork();
+	pidArray[forkCount] = child;
+	if(child == 0)
 	{
-	   printf("Waited for child %ld\n", childThatExitedID);
-	   if(WIFEXITED(status))
-	   {
-		printf("Child exit code %d\n", WEXITSTATUS(status));
-	   }
-	   else
-	   {
-		printf("Child terminated abnormally\n");
-	   }
+	   int myID = getpid();
+	   printf("Child %d starting: PID: %d...\n", (forkCount + 1), myID);
+	   execl("/home/samwich/SysProg/Assignment2/Task1/childCode", "childCode", NULL);
+	   printf("Passed 'execl'\n");
+	   return 1;
 	}
    }
-   if(rValue != wait(NULL))
+
+   signal(SIGUSR1, handler);
+
+   int count;
+   for(count = 0; count <= 4; count++)
    {
-	perror("Parent failed to wait due to signal error");
-	return 1;
+	waitpid(pidArray[count], &status, 0);
    }
 
    return 0;
