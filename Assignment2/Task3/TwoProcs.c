@@ -3,15 +3,17 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
-void runProc(char comOne[], char comTwo[], char *args[]);
+void runProc(char comOne[], char comTwo[]);
 
 int main(int argc, char *argv[])
 {
 	int status;
 	int childPid;
+	int grandChildPid;
 	int fileIDs[2];
+	int newFIDS[2];
 	
-	if(argc < 3 || argc > 5)
+	if(argc < 3 || argc > 7)
 	{
 		perror("Usage: './TwoProcs <command> [-arg..] <command> [-arg..] <command> [-arg]'");
 		return 1;
@@ -40,34 +42,64 @@ int main(int argc, char *argv[])
 		}
 		close(fileIDs[1]);
 		
-		if(argc = 3)
+		if(argc == 3)
 		{
 			runProc(argv[2], argv[2]);
+		}
+		if(argc == 5)
+		{
+			runProc(argv[3], argv[4]);
 		}
 	}
 	else
 	{
-		if(dup2(fileIDs[1], STDOUT_FILENO) < 0)
+		if(argc != 7)
 		{
-			perror("Failed to redirect standard output");
-			return 1;
+			if(dup2(fileIDs[1], STDOUT_FILENO) < 0)
+			{
+				perror("Failed to redirect standard output");
+				return 1;
+			}
+		
+			if(argc == 3)
+			{
+				runProc(argv[1], argv[1]);
+			}
+			if(argc == 5)
+			{
+				runProc(argv[1], argv[2]);
+			}
 		}
-		if(argc = 3)
+		else if (argc == 7)
 		{
-			runProc(argv[1], argv[1]);
+			grandChildPid = fork();
+			if (grandChildPid == -1)
+			{
+				perror("Creating grandChild process failed");
+				return 1;
+			}
+			
 		}
 	}
 	return 0;
 }
 
-void runProc(char comOne[], char comTwo[], char *args[])
+void runProc(char comOne[], char comTwo[])
 {
-	if(strcmp(argOne, argTwo) == 0)
+	if(strcmp(comOne, comTwo) == 0)
 	{
-		if(execlp(argOne, argOne, NULL))
+		if(execlp(comOne, comOne, NULL))
 		{
-			perror("runProc: First process not found");
-			printf("Check '%s': Command not recognized\n", argOne);
+			perror("runProc: first 'if': First process not found");
+			printf("Check '%s': Command not recognized\n", comOne);
+		}
+	}
+	else
+	{
+		if(execlp(comOne, comOne, comTwo, NULL))
+		{
+			perror("runProc: second 'if': First process not found");
+			printf("Check '%s': Command not recognized\n", comOne);
 		}
 	}
 }
