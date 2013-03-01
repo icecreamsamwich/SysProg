@@ -10,22 +10,22 @@ int main(int argc, char *argv[])
 	int status;
 	int childPid;
 	int grandChildPid;
-	int fileIDs[2];
-	int newFIDS[2];
-	
+	int parentChildPipe[2];
+	int childGrandChildPipe[2];
+
 	if(argc < 3 || argc > 7)
 	{
 		perror("Usage: './TwoProcs <command> [-arg..] <command> [-arg..] <command> [-arg]'");
 		return 1;
 	}
-	
-	status = pipe(fileIDs);
+
+	status = pipe(parentChildPipe);
 	if(status == -1)
 	{
 		perror("Failed to create the pipe");
 		return 1;
 	}
-	
+
 	childPid = fork();
 	if (childPid == -1)
 	{
@@ -35,50 +35,56 @@ int main(int argc, char *argv[])
 
 	if (childPid == 0)
 	{
-		if(dup2(fileIDs[0], STDIN_FILENO) < 0)
-		{	
-			perror("Failed to redirect standard input");
-			return 1;
-		}
-		close(fileIDs[1]);
-		
-		if(argc == 3)
+		int grandChildPid = fork();
+		if(grandChildPid == 0)
 		{
-			runProc(argv[2], argv[2]);
+			if(argc == 7)
+			{
+				close(parentChildPipe[0]);
+				close(parentChildPipe[1]);
+				dup2(childGrandChildPipe[0], STDIN_FILENO);
+				close(childGrandChildPipe[1]);
+				printf("argv[5]: %s\nargv[6]: %s\n", argv[5], argv[6]);
+				runProc(argv[5], argv[6]);
+			}
 		}
-		if(argc == 5)
+		else
 		{
-			runProc(argv[3], argv[4]);
+			if(dup2(parentChildPipe[0], STDIN_FILENO) < 0)
+			{
+				perror("Failed to redirect standard input");
+				return 1;
+			}
+			close(parentChildPipe[1]);
+			if (argc == 7)
+			{
+				dup2(childGrandChildPipe[1], STDOUT_FILENO);
+			}
+			if(argc == 3)
+			{
+				runProc(argv[2], argv[2]);
+			}
+			if(argc == 5 || argc == 7)
+			{
+				runProc(argv[3], argv[4]);
+			}
 		}
 	}
 	else
 	{
-		if(argc != 7)
+		if(dup2(parentChildPipe[1], STDOUT_FILENO) < 0)
 		{
-			if(dup2(fileIDs[1], STDOUT_FILENO) < 0)
-			{
-				perror("Failed to redirect standard output");
-				return 1;
-			}
-		
-			if(argc == 3)
-			{
-				runProc(argv[1], argv[1]);
-			}
-			if(argc == 5)
-			{
-				runProc(argv[1], argv[2]);
-			}
+			perror("Failed to redirect standard output");
+			return 1;
 		}
-		else if (argc == 7)
+
+		if(argc == 3)
 		{
-			grandChildPid = fork();
-			if (grandChildPid == -1)
-			{
-				perror("Creating grandChild process failed");
-				return 1;
-			}
-			
+			runProc(argv[1], argv[1]);
+		}
+		if(argc == 5 || argc == 7)
+		{
+			runProc(argv[1], argv[2]);
 		}
 	}
 	return 0;
@@ -104,9 +110,9 @@ void runProc(char comOne[], char comTwo[])
 	}
 }
 
-		
-		
-		
-		
-	
+
+
+
+
+
 
