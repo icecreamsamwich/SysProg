@@ -56,16 +56,21 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 			close(parentChildPipe[1]);
-			if (argc == 7)
+/*			if (argc == 7)
 			{
 				dup2(childGrandChildPipe[1], STDOUT_FILENO);
 			}
-			if(argc == 3)
+*/			if(argc == 3)
 			{
 				runProc(argv[2], argv[2]);
 			}
-			if(argc == 5 || argc == 7)
+else if(argc == 5)
 			{
+				runProc(argv[3], argv[4]);
+			}
+			else if(argc == 7)
+			{
+				dup2(childGrandChildPipe[1], STDOUT_FILENO);
 				runProc(argv[3], argv[4]);
 			}
 		}
@@ -92,8 +97,9 @@ int main(int argc, char *argv[])
 
 void runProc(char comOne[], char comTwo[])
 {
+	int const count = 0;
 	if(strcmp(comOne, comTwo) == 0)
-	{
+	{ count++;
 		if(execlp(comOne, comOne, NULL))
 		{
 			perror("runProc: first 'if': First process not found");
@@ -101,7 +107,7 @@ void runProc(char comOne[], char comTwo[])
 		}
 	}
 	else
-	{
+	{ count++;
 		if(execlp(comOne, comOne, comTwo, NULL))
 		{
 			perror("runProc: second 'if': First process not found");

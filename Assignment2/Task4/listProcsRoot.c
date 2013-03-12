@@ -16,7 +16,11 @@ int main(int argc, char *argv[])
 	char ps[] = "ps";
 	char wc[] = "wc";
 	char minusl[] = "-l";
-	char root[] = "-u root";
+	char minusu[] = "-u";
+	char root[] = "root";
+
+	char *const args[] = {ps, minusu, root, NULL};
+	char *const args2[] = {wc, minusl, NULL};
 
 	int brotherBrochildPipe[2]; //write[1] read[0]
 	int brotherProc;
@@ -28,12 +32,12 @@ int main(int argc, char *argv[])
 		dup2(brotherBrochildPipe[0], STDIN_FILENO);
 		close(brotherBrochildPipe[1]);
 		printf("Number of processes owned by root:\n");
-		execlp(wc, wc, minusl, NULL);
+		execvp(wc, args2);
 	}
 	else
 	{
 		dup2(brotherBrochildPipe[1], STDOUT_FILENO);
-		execlp(ps, ps, root, NULL);
+		execvp(ps, args);
 	}
 
 

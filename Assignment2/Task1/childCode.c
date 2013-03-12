@@ -33,4 +33,5 @@ int main()
    alarm(timer);
 
    sleep(timer + 1);
+   return 0;
 }

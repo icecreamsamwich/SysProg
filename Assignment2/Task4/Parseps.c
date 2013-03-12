@@ -12,20 +12,21 @@
 
 int main(int argc, char *argv[])
 {
-	char listProcsPath[] = "/Users/samoleary/Documents/GitHubProjects/SysProg/Assignment2/Task4/listProcs";
+	char listProcsPath[] = "/home/sam/Desktop/Lab6/Task4/listProcs";
 	char listProcsExe[] = "listProcs";
 
-	char listProcsRootPath[] = "/Users/samoleary/Documents/GitHubProjects/SysProg/Assignment2/Task4/listProcsRoot";
+	char listProcsRootPath[] = "/home/sam/Desktop/Lab6/Task4/listProcsRoot";
 	char listProcsRootExe[] = "listProcsRoot";
 
-	char listProcsInitdPath[] = "/Users/samoleary/Documents/GitHubProjects/SysProg/Assignment2/Task4/listProcsInitd";
+	char listProcsInitdPath[] = "/home/sam/Desktop/Lab6/Task4/listProcsInitd";
 	char listProcsInitdExe[] = "listProcsInitd";
 
 	int parentProcID = getpid();
 	int status;
 	int childProc = fork();
 
-	char *const args[] = {"ps", "-f", "--ppid", "1", NULL};
+	char *const args[] = {"ps", "-f", "--ppid", "1", NULL}; // Linux
+//	char *const args[] = {"ps", "-fp", "1", NULL};			// Mac OSX
 	char ps[] = "ps";
 
 
@@ -39,7 +40,7 @@ int main(int argc, char *argv[])
 		else
 		{
 			waitpid(grandChildProc, &status, 0);
-			execv(ps, args); // ps -f --ppid 1
+			execvp(ps, args); // ps -f --ppid 1
 		}
 	}
 	else
